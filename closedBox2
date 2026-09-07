@@ -1,0 +1,98 @@
+from robolink import *
+from robodk import *
+
+RDK = Robolink()
+
+NEW_OBJECT_NAME = 'ClosedBox2'
+
+REFERENCE_FRAME_INIT = 'Vaccum_Init'
+REFERENCE_FRAME_REF  = 'Vaccum_Ref'
+REF_TOOL = 'VaccumTool'
+
+frame_init = RDK.Item(
+    REFERENCE_FRAME_INIT,
+    ITEM_TYPE_FRAME
+)
+
+frame_ref = RDK.Item(
+    REFERENCE_FRAME_REF,
+    ITEM_TYPE_FRAME
+)
+
+tool = RDK.Item(
+    REF_TOOL,
+    ITEM_TYPE_TOOL
+)
+
+if not frame_init.Valid():
+    raise Exception("ไม่พบ Frame: Vaccum_Init")
+
+if not frame_ref.Valid():
+    raise Exception("ไม่พบ Frame: Vaccum_Ref")
+
+if not tool.Valid():
+    raise Exception("ไม่พบ Tool: VaccumTool")
+
+RDK.Render(False)
+
+print("================================")
+print("เริ่มเปลี่ยนวัตถุ")
+print("================================")
+
+print("กำลังซ่อนวัตถุเก่า...")
+
+for old_item in tool.Childs():
+
+    if old_item.Type() == ITEM_TYPE_OBJECT:
+
+        print(
+            "ซ่อน:",
+            old_item.Name()
+        )
+        old_item.setVisible(False)
+
+print("กำลังสร้างวัตถุใหม่...")
+
+for item in frame_init.Childs():
+
+    if item.Type() != ITEM_TYPE_OBJECT:
+        continue
+
+    print(
+        "Copy:",
+        item.Name()
+    )
+
+    item.Copy()
+
+    new_obj = RDK.Paste()
+
+    if not new_obj.Valid():
+        print("ERROR: สร้างวัตถุใหม่ไม่สำเร็จ")
+        continue
+
+    new_obj.setVisible(False)
+
+    new_obj.setParent(frame_ref)
+
+    new_obj.setName(
+        NEW_OBJECT_NAME
+    )
+
+    RDK.Update()
+
+    new_obj.setParentStatic(tool)
+
+    new_obj.setVisible(True)
+
+    print(
+        "แสดงวัตถุใหม่:",
+        NEW_OBJECT_NAME
+    )
+RDK.Render(True)
+
+print("================================")
+print("เสร็จเรียบร้อย")
+print("วัตถุเก่า = ซ่อน")
+print("วัตถุใหม่ = แสดง")
+print("================================")
